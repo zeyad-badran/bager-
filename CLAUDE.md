@@ -75,8 +75,22 @@ numbers; tests named with requirement IDs; update `docs/traceability.md` in the 
 
 ## Commands
 
-Added by the first scaffolding slice. Until then there is nothing to run. Do not invent commands;
-read `package.json` once it exists.
+Run from the repo root (see `package.json`; do not invent others):
+
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Next.js dev server for `apps/web` (http://localhost:3000) |
+| `pnpm build` | production build of `apps/web` (`next build`) |
+| `pnpm lint` | ESLint (Next.js rules + `@/modules/*/*` deep-import and `spikes/` restriction) |
+| `pnpm typecheck` | `tsc` over `apps/web` (strict) |
+| `pnpm test:unit` | unit tests (Vitest) incl. the boundary-checker tests |
+| `pnpm e2e` | Playwright smoke test in Chromium against a production build (needs `pnpm --filter web exec playwright install chromium` once) |
+| `pnpm check:boundaries` | module imports go through `index.ts` only; every file has a header comment |
+| `pnpm check:secrets` | tripwire scan for secret-looking strings |
+| `pnpm test:db` | migrations + seed + verify scripts + SQL tests (`DB_MODE=plain` needs a local PostgreSQL 17; `DB_MODE=supabase` needs `pnpm exec supabase start && pnpm exec supabase db reset`) |
+| `pnpm check` | typecheck + lint + unit + boundaries + secrets (database and e2e tests are separate) |
+
+The Supabase CLI is a pinned devDependency: run it as `pnpm exec supabase ...` (local Docker only, no login).
 
 ## How to work
 
