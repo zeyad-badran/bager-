@@ -43,3 +43,28 @@ paid service or real credential.
 ## Stop and ask if
 - The real Supabase stack behaves differently from the stand-in in a way that needs a schema change.
 - A dependency or paid service is needed that this spec does not name.
+
+## Delivery record (2026-11-20)
+
+Built on branch `feat/slice-01b-nextjs-scaffold` (based on `docs/claude-code-prompts`), on Windows 11
+with network access and Docker Desktop.
+
+| Scope item | State |
+|---|---|
+| 1 Scaffold (Next.js 16 App Router, Tailwind 4, shadcn/ui, ESLint 9, Vitest, Playwright) | Done. shadcn/ui is initialised (`components.json`, theme tokens, `cn` helper); no component added yet |
+| 2 Lockfile + `--frozen-lockfile` in CI | Done |
+| 3 `<html lang dir>` from `shared`; text through `translate`; LTR + RTL smoke test | Done. Locale comes from Accept-Language (`localeFromAcceptLanguage`, new, unit-tested) |
+| 4 Unit tests to Vitest | Owner said yes. Migrated; only the runner imports changed (`node:test` → `vitest`, `after` → `afterAll`). `tsx` stays: spike specs use `tsx --test` |
+| 5 CLI-accepted `config.toml` | Done: `supabase init` output (CLI 3.2.0) plus the project decisions, listed at the top of the file |
+| 6 Real Supabase run | Done locally: `supabase start`, `supabase db reset`, `DB_MODE=supabase pnpm test:db` all pass (41 verify checks, 99 assertions). No differences from the stand-in; no new migration |
+| 7 CI green, no `continue-on-error` | `continue-on-error` removed. CI result: see the PR (not run before the push) |
+| 8 ESLint import restriction | Done for `@/modules/*/*` deep imports and `spikes/`; relative deep imports stay with the script |
+
+Decisions taken with the product owner during the slice (2026-11-20): Vitest migration; the dependency
+set; Supabase CLI as a pinned root devDependency; `.gitattributes` (LF) and an exact `packageManager`.
+
+Deviations:
+- **PostgreSQL 17 instead of 16** (`config.toml` and the CI `database` job). Supabase CLI 3.x rejects
+  `major_version = 16`. Both test modes passed on 17. Needs to match the hosted project later (ADR-0005).
+- **ESLint 9, not 10.** `eslint-config-next` 16's plugins do not support ESLint 10 yet.
+- Vitest lives at the repo root (`vitest.config.mts`) because it also runs `scripts/` tests.

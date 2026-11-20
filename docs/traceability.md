@@ -28,7 +28,7 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 | FR-15 | Restaurant configuration | | | | — |
 | FR-16 | SaaS subscription | | | | — |
 | FR-17 | Observability | | | | — |
-| FR-18 | Localization | `shared` (i18n) | — | `i18n.test.ts` | partial (skeleton: locales, direction, catalogues; Arabic strings are placeholders) |
+| FR-18 | Localization | `shared` (i18n: locales, catalogues, `localeFromAcceptLanguage`), app shell `src/app/layout.tsx` (`<html lang dir>`), `src/lib/request-locale.ts` | — | `i18n.test.ts`, `accept-language.test.ts`, `apps/web/e2e/smoke.spec.ts` (LTR + RTL in Chromium) | partial (skeleton + root layout; locale from Accept-Language only, profile/branch locale not wired; Arabic strings are placeholders) |
 | FR-19 | Data export/deletion | | | | — |
 | FR-20 | Platform support controls | | | | — |
 
