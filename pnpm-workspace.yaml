@@ -1,0 +1,4 @@
+# Workspace packages. `apps/web` becomes a full Next.js app when the framework is
+# scaffolded (see docs/prompts/slice-01b-nextjs-scaffold.md); a worker app may join later (ADR-0004).
+packages:
+  - "apps/*"

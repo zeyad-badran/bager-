@@ -1,0 +1,101 @@
+# =============================================================================
+# Continuous integration.
+#
+# Serves:  CLAUDE.md "How to work" (run the full suite before saying done),
+#          docs/workflow.md "Definition of done", ADR-0001 (GitHub Actions).
+#
+# Jobs
+#   code      TypeScript typecheck, unit tests, module-boundary and header check, secret scan.
+#   database  Applies every migration to a plain PostgreSQL 16 service and runs the verify
+#             scripts and SQL tests (DB_MODE=plain, using a small stand-in for Supabase's
+#             auth schema). This is the job that proves RLS and tenant isolation (AT-02, AT-11).
+#   supabase  EXPERIMENTAL: the same checks against the real local Supabase stack.
+#             Never run in CI before; allowed to fail until someone has watched it pass once.
+#
+# No secrets are used. Nothing here deploys anything or touches a hosted service.
+# =============================================================================
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  code:
+    name: Typecheck, unit tests, boundaries, secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # TODO: switch to `--frozen-lockfile` once pnpm-lock.yaml is committed
+      # (the first run on a machine with network access creates it).
+      - run: pnpm install --no-frozen-lockfile
+
+      - run: pnpm typecheck
+      - run: pnpm test:unit
+      - run: pnpm check:boundaries
+      - run: pnpm check:secrets
+
+  database:
+    name: Database migrations, RLS and SQL tests (plain PostgreSQL 16)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          # Throwaway container password; the service lives only for this job.
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run database checks
+        run: bash scripts/test-db.sh
+        env:
+          DB_MODE: plain
+          DATABASE_URL_ADMIN: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+  supabase:
+    name: "EXPERIMENTAL: real local Supabase stack"
+    runs-on: ubuntu-latest
+    # Unverified job: do not let it block merges until it has passed at least once.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Starts the local stack (Docker) with the migrations and seed in supabase/.
+      - run: supabase start
+
+      - run: supabase db reset
+
+      - name: Run verify scripts and SQL tests against the local stack
+        run: bash scripts/test-db.sh
+        env:
+          DB_MODE: supabase
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

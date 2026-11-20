@@ -75,8 +75,18 @@ numbers; tests named with requirement IDs; update `docs/traceability.md` in the 
 
 ## Commands
 
-Added by the first scaffolding slice. Until then there is nothing to run. Do not invent commands;
-read `package.json` once it exists.
+Run from the repo root (see `package.json`; do not invent others):
+
+| Command | What it does |
+|---|---|
+| `pnpm typecheck` | `tsc` over `apps/web` (strict) |
+| `pnpm test:unit` | unit tests (`node:test` via `tsx`) incl. the boundary-checker tests |
+| `pnpm check:boundaries` | module imports go through `index.ts` only; every file has a header comment |
+| `pnpm check:secrets` | tripwire scan for secret-looking strings |
+| `pnpm test:db` | migrations + seed + verify scripts + SQL tests (`DB_MODE=plain` needs a local PostgreSQL; `DB_MODE=supabase` needs `supabase start`) |
+| `pnpm check` | typecheck + unit + boundaries + secrets (database tests are separate) |
+
+There is no `dev` or `build` command yet: the Next.js app is not scaffolded.
 
 ## How to work
 

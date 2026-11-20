@@ -1,0 +1,23 @@
+{
+  "name": "bager",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Restaurant Queue & Digital Pager SaaS",
+  "packageManager": "pnpm@10",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc -p apps/web --noEmit",
+    "test:unit": "tsx --test \"apps/web/src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
+    "check:boundaries": "node scripts/check-module-boundaries.mjs",
+    "check:secrets": "bash scripts/scan-secrets.sh",
+    "test:db": "bash scripts/test-db.sh",
+    "check": "pnpm typecheck && pnpm test:unit && pnpm check:boundaries && pnpm check:secrets"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
