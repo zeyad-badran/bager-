@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# environment and secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+
+# supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
+
+# tests
+playwright-report/
+test-results/
