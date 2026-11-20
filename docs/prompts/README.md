@@ -8,7 +8,7 @@ Claude chat writes them; Claude Code implements exactly what they say.
 | # | Spec | Status | Needs |
 |---|---|---|---|
 | 1 | [`slice-01-foundation.md`](slice-01-foundation.md) | partly delivered (PR #2) | merge PR #1, then #2 |
-| 2 | [`slice-01b-nextjs-scaffold.md`](slice-01b-nextjs-scaffold.md) | ready | network access for npm + Docker |
+| 2 | [`slice-01b-nextjs-scaffold.md`](slice-01b-nextjs-scaffold.md) | delivered, in review (see its delivery record) | merge PR #3 first |
 | 3 | [`slice-02-orders-state-machine.md`](slice-02-orders-state-machine.md) | ready after #1 merged | nothing external |
 | 4 | [`spike-claim-token.md`](spike-claim-token.md) | ready | nothing external; decides ADR-0006 |
 | 5 | [`spike-anonymous-realtime.md`](spike-anonymous-realtime.md) | ready after 01b | local Supabase |
