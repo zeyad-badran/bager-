@@ -17,6 +17,7 @@ Do not scaffold the app until `docs/adr/0001-*` is marked **Accepted**.
 - `docs/blueprint.md` — product blueprint. Requirement IDs `FR-xx`, acceptance scenarios `AT-xx`,
   risks, roadmap phases. Cite these IDs in commits and PRs.
 - `docs/adr/` — architecture decisions and their status (Proposed / Accepted / Open).
+- `docs/code-style.md` and `docs/traceability.md` — how code is written and traced to requirements.
 - `docs/workflow.md` — how Claude chat, Claude Code and the database step hand work to each other.
 - `docs/prompts/` — task specs written by Claude chat. Implement exactly the spec you are given.
 
@@ -30,7 +31,9 @@ If code and docs disagree, stop and ask. Do not silently change a decision.
    keys, or POS credentials. Local and synthetic data only. Real secrets live in the host's secret
    store, never in the repo, prompts, logs, or Figma.
 3. **Migrations are append-only.** Schema changes are new SQL files in `supabase/migrations/`.
-   Never edit a migration that has been applied or merged; write a new one.
+   Never edit a migration that has been applied or merged; write a new one. The database tool
+   (Antigravity) pushes them exactly as committed, so each must be correct, commented and verified
+   locally before it is merged.
 4. **Stop and ask** before: changing schema/RLS/auth, adding a dependency, touching secrets or
    deployment config, or deviating from the task spec.
 5. Never modify or require direct access to a restaurant's POS database (blueprint §7.2).
@@ -62,6 +65,12 @@ Next.js + TypeScript (strict) · Supabase (Postgres, Auth, RLS, Realtime) · Tai
 Vitest + Playwright · GitHub Actions · Vercel (candidate) · background-job approach decided by a spike
 (ADR-0004). Modular monolith; each module under `src/modules/<name>` exposes a public `index.ts` and
 other modules import only through it.
+
+## Code style and traceability
+
+Follow `docs/code-style.md`. In short: a header comment on every file naming its `FR-`/`AT-` IDs;
+comments explain *why*; thin handlers → services (rules) → repositories (SQL); small functions; no magic
+numbers; tests named with requirement IDs; update `docs/traceability.md` in the same PR.
 
 ## Commands
 

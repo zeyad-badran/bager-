@@ -1,6 +1,7 @@
 # ADR-0005: Database changes — migrations in Git, local → staging → prod
 
 - Status: **Proposed** by Claude chat (workflow review, 2026-11-20); not in the original blueprint
+- Owner-confirmed so far (2026-11-20): Antigravity applies the migration files **exactly as committed** and never edits them. Staging/production separation is still awaiting confirmation.
 - Date: 2026-11-20
 - Decided by: pending product owner
 - Blueprint refs: §7.1 ("schema migrations in Git"), §14.1, §18.1, §18.4, risk "Database migration failure"
@@ -18,8 +19,9 @@ agent contexts — which blueprint §18.1 forbids.
 _Pending._ Proposed: option 1.
 - Only Claude Code writes migrations, as new files in `supabase/migrations/`, via PR.
 - Local development uses the Supabase local stack with synthetic data.
-- Staging gets merged migrations by `supabase db push` (run by the owner, or by a tool following an
-  exact command from the task spec).
+- Staging gets merged migrations by `supabase db push`, run by Antigravity (connected to Supabase by the
+  owner) with the files unchanged. On any error it stops and reports; a fix is a new migration through a PR.
+- Each migration has a read-only verify script in `supabase/verify/` that Antigravity may run afterwards.
 - Production only after explicit owner approval, preferably from CI on a protected branch.
 - No agent holds production or service-role keys.
 

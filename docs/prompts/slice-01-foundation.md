@@ -12,7 +12,7 @@ A running Next.js + TypeScript app with a local Supabase database, CI, and a ten
 schema whose isolation is proven by adversarial tests. No customer or POS features yet.
 
 ## Read first
-`CLAUDE.md`, `docs/workflow.md`, `docs/blueprint.md` §5 (FR-01..03), §7, §8, §14, §15, and ADR-0001, ADR-0005.
+`CLAUDE.md`, `docs/code-style.md`, `docs/workflow.md`, `docs/traceability.md`, `docs/blueprint.md` §5 (FR-01..03), §7, §8, §14, §15, and ADR-0001, ADR-0005.
 
 ## Scope
 1. **Scaffold** `apps/web`: Next.js (App Router), TypeScript `strict`, Tailwind, shadcn/ui, ESLint,
@@ -26,7 +26,9 @@ schema whose isolation is proven by adversarial tests. No customer or POS featur
 4. **First migrations** (new files, append-only): `restaurants`, `branches`, `branch_settings`,
    `profiles`, `memberships` (restaurant/branch scoped role), `roles`/permissions as simple enums or
    table, `audit_logs`. UUID primary keys, `created_at/updated_at` in UTC, FK + check + unique
-   constraints, indexes for tenant lookups.
+   constraints, indexes for tenant lookups. Follow `docs/code-style.md` §5: header comment, one purpose
+   per file, RLS enabled in the same file as the table, `COMMENT ON` for non-obvious columns, and a
+   read-only `supabase/verify/<name>.sql` per migration. Antigravity will push these files unchanged.
 5. **RLS policies** on every table above: a member sees only rows for their restaurant (and branch
    where scoped); writes require the right role.
 6. **Tests first** (Vitest against the local DB): see Acceptance.
@@ -35,6 +37,8 @@ schema whose isolation is proven by adversarial tests. No customer or POS featur
 8. **CI** (GitHub Actions): install, typecheck, lint, unit tests, `supabase start` + migration apply +
    RLS tests, secret scan.
 9. `.env.example` for any variable added; update `CLAUDE.md` "Commands" with the real commands.
+10. Every file has the header comment from `docs/code-style.md`; fill the matching rows in
+    `docs/traceability.md` (FR-01..03, AT-02, AT-11).
 
 ## Out of scope
 Customer pages, QR, claim tokens, POS adapters, orders/queue tables, outbox/worker, billing, push,
