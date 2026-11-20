@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { after, describe, it } from "node:test";
+import { afterAll, describe, it } from "vitest";
 import { findViolations } from "./check-module-boundaries.mjs";
 
 const HEADER = "/**\n * Fixture.\n *\n * Module:   x\n * Serves:   FR-01\n */\n";
@@ -26,7 +26,7 @@ function makeRepo(files) {
   return root;
 }
 
-after(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
+afterAll(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
 
 const M = "apps/web/src/modules";
 

@@ -5,7 +5,7 @@
  * Serves:   FR-18 (localization, RTL)
  */
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 import { DEFAULT_LOCALE, getDirection, isLocale, isLocaleTag, resolveLocale } from "./locales";
 import { MESSAGES, translate } from "./messages";
 

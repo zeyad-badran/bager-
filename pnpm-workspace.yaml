@@ -1,4 +1,12 @@
-# Workspace packages. `apps/web` becomes a full Next.js app when the framework is
-# scaffolded (see docs/prompts/slice-01b-nextjs-scaffold.md); a worker app may join later (ADR-0004).
+# Workspace packages. `apps/web` is the Next.js app (slice 01b); a worker app may join later (ADR-0004).
 packages:
   - "apps/*"
+
+# Packages allowed to run install scripts (pnpm 10 blocks them by default).
+#   esbuild, @tailwindcss/oxide, sharp: download their native binary for this platform.
+#   supabase: downloads the Supabase CLI binary that `pnpm exec supabase` runs.
+onlyBuiltDependencies:
+  - "@tailwindcss/oxide"
+  - esbuild
+  - sharp
+  - supabase

@@ -7,7 +7,7 @@
  *           these keep the UI hint in step with them.
  */
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 import { PERMISSIONS, can } from "./permissions";
 import { STAFF_ROLES, isStaffRole, type RoleGrant } from "./roles";
 
