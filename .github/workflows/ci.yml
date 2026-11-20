@@ -1,0 +1,139 @@
+# =============================================================================
+# Continuous integration.
+#
+# Serves:  CLAUDE.md "How to work" (run the full suite before saying done),
+#          docs/workflow.md "Definition of done", ADR-0001 (GitHub Actions), slice 01b item 7.
+#
+# Jobs
+#   code      Install (frozen lockfile), typecheck, lint, unit tests (Vitest), module-boundary and
+#             header check, secret scan, production build.
+#   e2e       Playwright smoke test in Chromium against a production build (FR-18 LTR/RTL).
+#   database  Applies every migration to a plain PostgreSQL 17 service and runs the verify
+#             scripts and SQL tests (DB_MODE=plain, using a small stand-in for Supabase's
+#             auth schema). Fast; proves RLS and tenant isolation (AT-02, AT-11).
+#   supabase  The same verify scripts and SQL tests against the REAL local Supabase stack
+#             (`supabase start` + `supabase db reset`), using the CLI version pinned in package.json.
+#
+# No secrets are used. Nothing here deploys anything or touches a hosted service.
+# =============================================================================
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  code:
+    name: Typecheck, lint, unit tests, boundaries, secrets, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm check:boundaries
+      - run: pnpm check:secrets
+      - run: pnpm build
+
+  e2e:
+    name: Playwright smoke test (Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Browser binary + the Linux libraries it needs. Free download, no account.
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+
+      # playwright.config.ts builds and starts the app itself (webServer).
+      - run: pnpm e2e
+
+      - name: Keep the HTML report when the test fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  database:
+    name: Database migrations, RLS and SQL tests (plain PostgreSQL 17)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          # Throwaway container password; the service lives only for this job.
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run database checks
+        run: bash scripts/test-db.sh
+        env:
+          DB_MODE: plain
+          DATABASE_URL_ADMIN: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+
+  supabase:
+    name: Database migrations, RLS and SQL tests (real local Supabase stack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Installs the pinned Supabase CLI (root devDependency), so CI and laptops run one version.
+      - run: pnpm install --frozen-lockfile
+
+      # Starts the local stack (Docker). Studio, Storage, edge functions and analytics are not
+      # needed for database tests; skipping them saves several minutes of image pulls.
+      - run: pnpm exec supabase start -x studio,storage-api,imgproxy,edge-runtime,logflare,vector,mailpit,supavisor
+
+      # Rebuilds from zero: every migration in order, then supabase/seed.sql.
+      - run: pnpm exec supabase db reset
+
+      - name: Run verify scripts and SQL tests against the local stack
+        run: bash scripts/test-db.sh
+        env:
+          DB_MODE: supabase
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

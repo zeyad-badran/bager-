@@ -1,0 +1,12 @@
+# Line endings: always LF in the repository and in every checkout.
+#
+# Why: the bash scripts (scripts/*.sh) and SQL files run inside Linux containers (CI, Supabase,
+# plain PostgreSQL). A Windows checkout with core.autocrlf=true turns them into CRLF, and bash then
+# fails on `set -o pipefail\r`. Forcing LF keeps local runs identical to CI on every OS.
+* text=auto eol=lf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

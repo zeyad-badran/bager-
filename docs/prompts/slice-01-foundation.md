@@ -1,6 +1,7 @@
 # Slice 01 — Project foundation and tenant schema
 
-Status: **ready** (ADR-0001 and ADR-0005 Accepted 2026-11-20)
+Status: **partly delivered** on branch `feat/slice-01-foundation`; the rest moved to `slice-01b-nextjs-scaffold.md`
+(ADR-0001 and ADR-0005 Accepted 2026-11-20)
 Covers: FR-01, FR-02, FR-03 (foundation only), AT-02, AT-11
 Phase: 3 — Architecture and backend foundation
 
@@ -61,3 +62,29 @@ any hosted Supabase/Vercel project, any paid service, any real credential.
 - You need a paid service, a hosted Supabase project, or any real secret.
 - The role model in blueprint §11.2 is unclear for a permission you must encode (it is still a
   *proposal*). Encode the minimum and list the gap in the hand-off.
+
+## Delivery record (2026-11-20)
+
+Built in an environment without access to the npm registry and without the Supabase CLI, so only
+what could be verified there was built. Honest split:
+
+| Scope item | State |
+|---|---|
+| 1 Scaffold (Next.js, Tailwind, shadcn/ui, ESLint, Vitest, Playwright) | **Not done** → `slice-01b-nextjs-scaffold.md` |
+| 2 Module skeleton + boundary rule | Done. Boundary rule is `scripts/check-module-boundaries.mjs` (not ESLint); `identity`, `tenancy`, `audit`, `shared` have code, the other five are stubs |
+| 3 Supabase local setup | `config.toml` hand-written and **not checked with the CLI**; seed is synthetic |
+| 4 Migrations + verify scripts | Done (7 migrations, 7 verify scripts) |
+| 5 RLS policies | Done (15 policies) |
+| 6 Tests first | Done as **SQL tests** against PostgreSQL 16 (99 assertions) instead of Vitest; unit tests use `node:test` |
+| 7 i18n skeleton | Library part done (`shared/i18n`); root-layout `dir` switching needs the Next.js app (slice 01b) |
+| 8 CI | Workflow written; **never run**. `database` job uses plain PostgreSQL; the real-Supabase job is experimental |
+| 9 `.env.example`, `CLAUDE.md` Commands | Done |
+| 10 Headers + traceability | Done (headers enforced by the checker) |
+
+Deviations from this spec, for the product owner to accept or reject:
+- `node:test` + `tsx` instead of Vitest for unit tests (no installs possible). Vitest can replace it in 01b.
+- SQL-level tests instead of Vitest-against-local-DB. They test the same policies more directly; the
+  `supabase` CI job reuses them against the real stack.
+- The database tests ran on plain PostgreSQL 16 with a small stand-in for Supabase's `auth` schema and
+  roles (`supabase/tests/support/00_stub_supabase.sql`). They have **not** run on the real Supabase stack.
+- Known gap: `TODO(FR-03)` last-owner protection (an owner can remove the last owner of a restaurant).
