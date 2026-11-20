@@ -136,7 +136,7 @@ Everything else flows through CI and a normal PR review.
 | 0 Product definition / PRD | In progress | Draft and refine docs, ADRs, backlog |
 | 1 UX/UI | Not started | Figma/prototype work `[OPEN: is Figma still used?]` |
 | 2 Feasibility spikes | **Start here** | Throwaway code under `spikes/`: Web Push on real iOS/Android, anonymous customer realtime, claim-token prototype, POS sandbox access |
-| 3 Architecture & backend foundation | Blocked until ADR-0001/0003 are Accepted | Scaffold, schema, RLS tests (`docs/prompts/slice-01-foundation.md`) |
+| 3 Architecture & backend foundation | **In progress** (ADR-0001, ADR-0005 Accepted) | Scaffold, schema, RLS tests (`docs/prompts/slice-01-foundation.md`) |
 | 4+ | Blocked | Per blueprint exit gates |
 
 The blueprint's own rule applies: no large-scale implementation until Phase 0 decisions are approved

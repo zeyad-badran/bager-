@@ -1,11 +1,11 @@
 # Slice 01 — Project foundation and tenant schema
 
-Status: **blocked-by ADR-0001 (and ADR-0005) being Accepted**
+Status: **ready** (ADR-0001 and ADR-0005 Accepted 2026-11-20)
 Covers: FR-01, FR-02, FR-03 (foundation only), AT-02, AT-11
 Phase: 3 — Architecture and backend foundation
 
-Do not start this slice until the product owner has marked ADR-0001 and ADR-0005 **Accepted**.
-Phase 2 spikes (Web Push, anonymous realtime, claim-token, POS access) come first and may change this spec.
+Phase 2 spikes (Web Push, anonymous realtime, claim-token, POS access) run in parallel and may change
+later slices; this slice only covers tenant isolation, which does not depend on them.
 
 ## Goal
 A running Next.js + TypeScript app with a local Supabase database, CI, and a tenant/branch/membership
@@ -57,7 +57,7 @@ any hosted Supabase/Vercel project, any paid service, any real credential.
 - CI is green on the PR.
 
 ## Stop and ask if
-- ADR-0001 or ADR-0005 are not Accepted, or you find they conflict with this spec.
+- You find ADR-0001 or ADR-0005 conflict with this spec.
 - You need a paid service, a hosted Supabase project, or any real secret.
 - The role model in blueprint §11.2 is unclear for a permission you must encode (it is still a
   *proposal*). Encode the minimum and list the gap in the hand-off.

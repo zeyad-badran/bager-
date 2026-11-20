@@ -9,8 +9,9 @@ securely claims their order, and gets a READY notification when staff update it.
 its POS; we add the order-status and notification layer. Multi-tenant (restaurant → branches),
 POS-agnostic, manual order entry always available, multiple customer devices per order.
 
-**Current stage: planning / pre-build (Phase 0–2).** The stack below is *proposed*, not approved.
-Do not scaffold the app until `docs/adr/0001-*` is marked **Accepted**.
+**Current stage: Phase 2 spikes and Phase 3 foundation.** ADR-0001 (stack) and ADR-0005 (database
+workflow) are **Accepted**. Other ADRs marked Proposed/Open are not approved: do not build irreversible
+things on them (hosting, background worker, customer claim model).
 
 ## Source of truth (read before you code)
 
@@ -59,12 +60,12 @@ If code and docs disagree, stop and ask. Do not silently change a decision.
 - All user-facing strings go through i18n from day one (English + Arabic candidates); layouts must
   work LTR and RTL.
 
-## Proposed stack (pending ADR-0001)
+## Stack (ADR-0001, Accepted)
 
 Next.js + TypeScript (strict) · Supabase (Postgres, Auth, RLS, Realtime) · Tailwind + shadcn/ui ·
-Vitest + Playwright · GitHub Actions · Vercel (candidate) · background-job approach decided by a spike
-(ADR-0004). Modular monolith; each module under `src/modules/<name>` exposes a public `index.ts` and
-other modules import only through it.
+Vitest + Playwright · GitHub Actions · Vercel (candidate, ADR-0003 still Proposed) · background-job
+approach decided by a spike (ADR-0004, Open). Modular monolith; each module under
+`apps/web/src/modules/<name>` exposes a public `index.ts` and other modules import only through it.
 
 ## Code style and traceability
 

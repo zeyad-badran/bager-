@@ -13,11 +13,11 @@ Copy `0000-template.md` for new ones.
 
 | ADR | Decision | Status |
 |---|---|---|
-| [0001](0001-modular-monolith-nextjs-supabase.md) | Modular monolith on Next.js + TypeScript + Supabase | Proposed |
+| [0001](0001-modular-monolith-nextjs-supabase.md) | Modular monolith on Next.js + TypeScript + Supabase | **Accepted** |
 | [0002](0002-pos-adapters-canonical-order.md) | Independent POS adapter per provider, canonical order model | Proposed |
 | [0003](0003-hosting-vercel-supabase.md) | Hosting: Vercel + Supabase as starting candidate | Proposed |
 | [0004](0004-background-processing.md) | Background processing and outbox worker | Open |
-| [0005](0005-database-change-workflow.md) | Database changes: migrations in Git, local → staging → prod | Proposed |
+| [0005](0005-database-change-workflow.md) | Database changes: migrations in Git, local → staging → prod | **Accepted** |
 | [0006](0006-customer-order-claim-model.md) | Customer order claim and multi-device model | Open |
 
 ## Decisions already confirmed by the product owner (blueprint §3.1)
@@ -25,7 +25,8 @@ Copy `0000-template.md` for new ones.
 Multiple POS providers over time · automatic POS sync **and** manual entry · kitchen and cashier can
 both mark READY (role matrix still open) · SaaS subscription · customer enters an order number
 (verification method unresolved, see ADR-0006) · multiple devices per order · web-only first ·
-global ambition with staged rollout · Claude Code for coding · Figma for UI/UX.
+global ambition with staged rollout · Claude Code for coding · Figma for UI/UX ·
+ADR-0001 (stack/architecture) and ADR-0005 (database workflow) accepted 2026-11-20.
 
 ## Decisions still open (blueprint §3.3)
 
