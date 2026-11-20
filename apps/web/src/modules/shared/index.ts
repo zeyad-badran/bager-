@@ -18,3 +18,4 @@ export {
   type TextDirection,
 } from "./i18n/locales";
 export { MESSAGES, translate, type MessageKey } from "./i18n/messages";
+export { localeFromAcceptLanguage } from "./i18n/accept-language";

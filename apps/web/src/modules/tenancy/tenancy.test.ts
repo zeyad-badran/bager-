@@ -5,7 +5,7 @@
  * Serves:   FR-02 (branch scope), AT-02 / AT-11 (tenant isolation), FR-02 (branch time zone)
  */
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 import { DomainError } from "../shared";
 import { canAccessBranch, isRestaurantWide, type Membership } from "./membership";
 import { assertValidTimeZone, isValidTimeZone } from "./time-zone";
