@@ -30,9 +30,12 @@ ADR-0004 (Open: **do not build a worker**), slice 01 migrations and `supabase/te
      Wrong `p_expected_version` → a distinct error code (conflict); illegal transition → another; no permission → another.
    - Audit trigger attached to `orders` (reuse `private.audit_row_change`). No policy lets a client `update` `status` or
      `version` directly: clients call the function only.
-2. **Permissions (encode the minimum, list the gap):** owner, manager, cashier and kitchen may do
-   `new→preparing`, `preparing→ready`, `ready→collected`; owner, manager, cashier may cancel; auditor reads only.
-   Branch-scoped staff act on their own branch only. Blueprint §11.2 is still a proposal: report every assumption.
+2. **Permissions (decided by the product owner, 2026-11-21):** any staff member may perform every valid transition
+   (`new→preparing`, `preparing→ready`, `ready→collected`, and cancel from `new` or `preparing`): that means the roles
+   owner, manager, cashier and kitchen. **Auditor is read-only** (assumption, to be confirmed). Non-members and anonymous
+   users can do nothing. Branch-scoped staff act on their own branch only. The transition table in blueprint §5.1 still
+   decides which moves are valid; roles only decide who may attempt them. Blueprint §11.2 is still a proposal: report any
+   assumption in the hand-off.
 3. **TypeScript** in `apps/web/src/modules/orders` (public `index.ts`):
    - `transitions.ts`: the pure allowed-transition table and `canTransition(from, to)`, mirroring the SQL.
    - `order-service.ts`: thin service calling the function through an injected repository interface; maps the three error
@@ -52,7 +55,7 @@ Tests first, as SQL tests in `supabase/tests/` named with requirement IDs, plus 
   `collected` works and creates a separate order.
 - AT-05: kitchen marks READY → exactly one `order.ready` outbox row; repeating the call (same or stale version) does not
   create a second one.
-- AT-06: cashier READY allowed and audited; a role without permission is rejected and writes nothing.
+- AT-06: a cashier setting READY is allowed and audited; so are kitchen, manager and owner. An auditor, a non-member and a user of another tenant are rejected and write nothing.
 - AT-09: two sessions race on the same order/version (use two connections); exactly one succeeds, the other gets the
   conflict error and sees the latest state.
 - Illegal transitions (`collected→ready`, `new→ready`, `cancelled→*`) fail; terminal states stay terminal.
@@ -62,6 +65,6 @@ Tests first, as SQL tests in `supabase/tests/` named with requirement IDs, plus 
 
 ## Stop and ask if
 - Any change to existing migrations seems necessary (it never is: write a new one).
-- The role matrix above conflicts with blueprint §11.2 or the owner's wishes.
+- The role rule above conflicts with blueprint §11.2 or the owner's wishes.
 - You are tempted to add a queue/worker/push table beyond `outbox_events`.
 - AT-09 cannot be tested reliably with the available tooling.
