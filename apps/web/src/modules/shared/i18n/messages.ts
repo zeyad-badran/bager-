@@ -12,6 +12,8 @@
 import { DEFAULT_LOCALE, type Locale } from "./locales";
 
 const en = {
+  "app.name": "Digital Pager",
+  "home.placeholder": "Your order status will appear here.",
   "common.loading": "Loading…",
   "common.error": "Something went wrong. Please try again.",
   "auth.signIn": "Sign in",
@@ -21,6 +23,8 @@ export type MessageKey = keyof typeof en;
 
 /** Arabic catalogue. `Record<MessageKey, string>` makes a missing or extra key a compile error. */
 const ar: Record<MessageKey, string> = {
+  "app.name": "جهاز النداء الرقمي",
+  "home.placeholder": "ستظهر حالة طلبك هنا.",
   "common.loading": "جارٍ التحميل…",
   "common.error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
   "auth.signIn": "تسجيل الدخول",
