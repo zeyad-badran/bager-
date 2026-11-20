@@ -83,8 +83,10 @@ The database tool applies migration files **exactly as committed** and never edi
 - No environment-specific values, no secrets, no seed data (seed data lives in `supabase/seed.sql`,
   local only).
 - Name every constraint and index explicitly. Add `COMMENT ON TABLE/COLUMN` for anything not obvious.
-- **Enable RLS in the same migration that creates the table**, with policies named
-  `<table>_<role>_<action>`.
+- **Enable RLS in the same migration that creates the table.** A table with RLS on and no policy
+  denies everything, so policies may follow in a later migration, but they must arrive before the
+  table is used. Name policies `<table>_<role>_<action>`. Grant API roles only the columns and
+  operations they need (revoke first, then grant).
 - Must apply cleanly to an empty database and on top of all earlier migrations. CI proves this with
   `supabase db reset` and then runs the RLS tests.
 - **Read-only verify script** for each migration at `supabase/verify/<same name>.sql`: queries only,

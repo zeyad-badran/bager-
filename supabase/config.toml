@@ -1,0 +1,27 @@
+# Supabase local development settings.
+# `supabase init` generates a longer file; keep any extra keys it adds.
+# Only the settings this project depends on are written out here.
+#
+# NOTE: this file was written by hand and has not been run through the Supabase CLI yet.
+# If `supabase start` reports an unknown or missing key, let the CLI regenerate it and
+# re-apply the three decisions below.
+
+project_id = "bager"
+
+[api]
+enabled = true
+port = 54321
+# SECURITY: only `public` is exposed to the API. The `private` schema holds RLS helper
+# functions and must never be added here (blueprint §14.1).
+schemas = ["public"]
+extra_search_path = ["public"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 16
+
+[db.seed]
+enabled = true
+# Synthetic data only; never used for staging or production.
+sql_paths = ["./seed.sql"]
