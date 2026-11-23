@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Runs the database checks: migrations -> seed -> verify scripts -> SQL tests.
+# Runs the database checks: migrations -> seed -> verify scripts -> SQL tests ->
+# concurrency tests (supabase/tests/concurrency/*.sh, several connections at once, AT-09).
 #
 # Two modes (DB_MODE):
 #   plain     (default) Builds a throwaway database on a plain PostgreSQL server,
@@ -86,6 +87,20 @@ for f in $(ls supabase/tests/*.sql | sort); do
     grep -E "PASS" <<<"$out" | sed 's/^psql:[^ ]* //; s/^/   /' || true
   else
     grep -E "PASS|FAIL|ERROR" <<<"$out" | sed 's/^psql:[^ ]* //; s/^/   /' || true
+    echo "TEST FILE FAILED: $f" >&2
+    exit 1
+  fi
+done
+
+# ---------------------------------------------------------------------------
+# Concurrency tests: shell scripts that open SEVERAL connections at once (AT-09).
+# They commit their own fixture rows and delete them again, so they run after the
+# rolled-back SQL tests above. A non-zero exit fails the run.
+# ---------------------------------------------------------------------------
+step "Run concurrency tests"
+for f in $(ls supabase/tests/concurrency/*.sh 2>/dev/null | sort); do
+  echo "-- $f"
+  if ! DB_URL="$DB_URL" bash "$f"; then
     echo "TEST FILE FAILED: $f" >&2
     exit 1
   fi
