@@ -53,17 +53,26 @@ export class OrderRepositoryError extends Error {
   }
 }
 
+type ErrorMap = Readonly<Record<string, DomainErrorCode>>;
+
+/** SQLSTATEs both order functions raise with the same meaning (migration 20261123100300). */
+const COMMON_DATABASE_ERRORS: ErrorMap = {
+  "42501": "NOT_ALLOWED", //   no permission, or the order/branch does not exist (AT-11)
+  "22023": "INVALID_INPUT", // a required argument was missing
+  "23514": "INVALID_INPUT", // check constraint, e.g. blank or too long ticket number
+};
+
 /**
- * SQLSTATEs raised by the order functions (see the ERROR CODES block in migration
- * 20261123100300) and the domain code each one means. Anything else is unexpected and
- * is rethrown unchanged.
+ * Per-operation maps. PT422 means a different thing in each function, so the operation
+ * decides: create_manual_order raises it for an inactive branch (migration 20261124100100),
+ * transition_order for a move blueprint §5.1 does not allow. Anything not listed is
+ * unexpected and is rethrown unchanged.
  */
-const DATABASE_ERROR_TO_DOMAIN: Readonly<Record<string, DomainErrorCode>> = {
+const CREATE_ERRORS: ErrorMap = { ...COMMON_DATABASE_ERRORS, PT422: "BRANCH_INACTIVE" };
+const TRANSITION_ERRORS: ErrorMap = {
+  ...COMMON_DATABASE_ERRORS,
   PT409: "CONFLICT", //           version changed since read (AT-09)
   PT422: "INVALID_TRANSITION", // not allowed by blueprint §5.1
-  "42501": "NOT_ALLOWED", //      no permission, or the order/branch does not exist (AT-11)
-  "22023": "INVALID_INPUT", //    a required argument was missing
-  "23514": "INVALID_INPUT", //    check constraint, e.g. blank or too long ticket number
 };
 
 /** Canonical UUID text form, as Postgres prints it. */
@@ -73,13 +82,15 @@ function assertUuid(value: string, field: string): void {
   if (!UUID_PATTERN.test(value)) throw new DomainError("INVALID_INPUT", `${field} must be a UUID`);
 }
 
-/** Turn a known database failure into a DomainError; leave everything else untouched. */
-function translateError(error: unknown): never {
-  if (error instanceof OrderRepositoryError) {
-    const code = DATABASE_ERROR_TO_DOMAIN[error.databaseCode];
-    if (code !== undefined) throw new DomainError(code, error.message);
-  }
-  throw error;
+/** Build a translator: a known database failure becomes a DomainError; everything else passes through. */
+function translateWith(map: ErrorMap) {
+  return (error: unknown): never => {
+    if (error instanceof OrderRepositoryError) {
+      const code = map[error.databaseCode];
+      if (code !== undefined) throw new DomainError(code, error.message);
+    }
+    throw error;
+  };
 }
 
 /** Build the order service around a repository (dependency injection keeps it testable). */
@@ -87,13 +98,14 @@ export function createOrderService(repository: OrderRepository) {
   return {
     /**
      * FR-06: create a manual order (status new, version 1) in a branch.
-     * @throws DomainError INVALID_INPUT (bad branch id or blank ticket), NOT_ALLOWED
+     * @throws DomainError INVALID_INPUT (bad branch id or blank ticket), NOT_ALLOWED,
+     *         BRANCH_INACTIVE (the branch accepts no new orders)
      */
     async createManualOrder(branchId: string, ticketNumber: string): Promise<Order> {
       assertUuid(branchId, "branchId");
       const trimmed = ticketNumber.trim();
       if (trimmed === "") throw new DomainError("INVALID_INPUT", "ticketNumber must not be blank");
-      return repository.createManualOrder(branchId, trimmed).catch(translateError);
+      return repository.createManualOrder(branchId, trimmed).catch(translateWith(CREATE_ERRORS));
     },
 
     /**
@@ -108,7 +120,7 @@ export function createOrderService(repository: OrderRepository) {
         throw new DomainError("INVALID_INPUT", "expectedVersion must be a positive whole number");
       }
       if (!isOrderStatus(toStatus)) throw new DomainError("INVALID_INPUT", "toStatus is not an order status");
-      return repository.transitionOrder(orderId, expectedVersion, toStatus).catch(translateError);
+      return repository.transitionOrder(orderId, expectedVersion, toStatus).catch(translateWith(TRANSITION_ERRORS));
     },
   };
 }
