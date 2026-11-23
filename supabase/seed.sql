@@ -16,7 +16,7 @@
 --   branches     20000000-0000-4000-8000-0000000000NN    01 Alpha Downtown  02 Alpha Airport
 --                                                        11 Beta Mall       12 Beta Old Town
 --
--- Serves: FR-01, FR-02, FR-03, AT-02, AT-11 (test fixtures)
+-- Serves: FR-01, FR-02, FR-03, AT-02, AT-11 (test fixtures); orders at the end (slice 02)
 -- Inserts run as the database owner, so RLS does not apply to the seed itself.
 -- =============================================================================
 
@@ -62,3 +62,51 @@ insert into public.memberships (restaurant_id, branch_id, user_id, role) values
   ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000011', '00000000-0000-4000-8000-000000000014', 'kitchen'),
   ('10000000-0000-4000-8000-000000000002', null,                                   '00000000-0000-4000-8000-000000000015', 'auditor')
 on conflict do nothing;
+
+-- =============================================================================
+-- Orders (slice 02). Inserted directly by the database owner so each fixture can
+-- start in the state a test needs; real clients can only use create_manual_order()
+-- and transition_order().
+--
+--   orders       30000000-0000-4000-8000-0000000000NN
+--                01 Alpha Downtown  ticket 42  new        v1
+--                02 Alpha Downtown  ticket 7   collected  v4   (earlier order, finished)
+--                03 Alpha Downtown  ticket 7   preparing  v2   (ticket 7 REUSED after 02 was collected)
+--                04 Alpha Downtown  ticket 15  ready      v3   (has its order.ready outbox event)
+--                05 Alpha Downtown  ticket 16  cancelled  v2
+--                06 Alpha Airport   ticket 42  new        v1
+--                11 Beta Mall       ticket 42  new        v1   (SAME ticket number as Alpha's 01)
+--                12 Beta Mall       ticket 8   preparing  v2
+--
+-- Serves: FR-06, FR-10, AT-02 (same ticket number in two restaurants; reuse in one
+--         branch), AT-05, AT-06, AT-09, AT-11 (test fixtures)
+-- =============================================================================
+insert into public.orders
+  (id, restaurant_id, branch_id, ticket_number, source, status, version, created_at, ready_at, closed_at)
+values
+  ('30000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+   '42', 'manual', 'new',       1, now() - interval '5 minutes', null, null),
+  ('30000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+   '7',  'manual', 'collected', 4, now() - interval '3 hours', now() - interval '170 minutes', now() - interval '160 minutes'),
+  ('30000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+   '7',  'manual', 'preparing', 2, now() - interval '10 minutes', null, null),
+  ('30000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+   '15', 'manual', 'ready',     3, now() - interval '20 minutes', now() - interval '2 minutes', null),
+  ('30000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+   '16', 'manual', 'cancelled', 2, now() - interval '30 minutes', null, now() - interval '25 minutes'),
+  ('30000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002',
+   '42', 'manual', 'new',       1, now() - interval '4 minutes', null, null),
+  ('30000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000011',
+   '42', 'manual', 'new',       1, now() - interval '6 minutes', null, null),
+  ('30000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000011',
+   '8',  'manual', 'preparing', 2, now() - interval '12 minutes', null, null)
+on conflict (id) do nothing;
+
+-- The ready fixture already had its READY event enqueued (ids only, no customer data).
+insert into public.outbox_events (restaurant_id, branch_id, order_id, event_type, payload)
+values ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+        '30000000-0000-4000-8000-000000000004', 'order.ready',
+        jsonb_build_object('order_id', '30000000-0000-4000-8000-000000000004',
+                           'restaurant_id', '10000000-0000-4000-8000-000000000001',
+                           'branch_id', '20000000-0000-4000-8000-000000000001'))
+on conflict (order_id, event_type) do nothing;
