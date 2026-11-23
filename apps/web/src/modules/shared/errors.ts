@@ -19,6 +19,8 @@ export const DOMAIN_ERROR_CODES = [
   "CONFLICT",
   // The requested status change is not in the lifecycle table (blueprint §5.1, FR-10).
   "INVALID_TRANSITION",
+  // The branch is closed (branches.is_active = false): no new orders (FR-06, slice 02b).
+  "BRANCH_INACTIVE",
 ] as const;
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];

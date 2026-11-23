@@ -3,7 +3,7 @@
 Maps each requirement in `docs/blueprint.md` to the code, migrations and tests that implement it.
 Update this file in the **same PR** that adds the code. A row with no tests is not done.
 
-Migration numbers are the timestamp prefix in `supabase/migrations/`. Slice 01 files start `20261120` (`100100` means `20261120100100_...`); slice 02 files start `20261123` and are written with the day (`23:100300` means `20261123100300_...`).
+Migration numbers are the timestamp prefix in `supabase/migrations/`. Slice 01 files start `20261120` (`100100` means `20261120100100_...`); slice 02 files start `20261123` and slice 02b files `20261124`; both are written with the day (`23:100300` means `20261123100300_...`).
 
 Status: `—` not started · `spike` evidence only · `partial` · `done`
 
@@ -16,15 +16,15 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 | FR-03 | Staff identity and roles | `identity` | `100000` staff_role, `100300` helpers, `100500` policies | `supabase/tests/fr03_roles_and_no_membership.sql`, `identity.test.ts` | partial (`TODO(FR-03)`: last-owner protection; staff invitation flow not built) |
 | FR-04 | POS connector framework | | | | — |
 | FR-05 | Automatic order ingestion | | | | — |
-| FR-06 | Manual order entry | `orders` (`order-service.ts` `createManualOrder`) | `23:100000` orders, `23:100200` read policy (no client writes), `23:100300` `create_manual_order()` | `supabase/tests/fr06_manual_order_entry.sql`, `order-service.test.ts` | partial (database + service; no route handler or UI) |
+| FR-06 | Manual order entry | `orders` (`order-service.ts` `createManualOrder`) | `23:100000` orders, `23:100200` read policy (no client writes), `23:100300` `create_manual_order()`, `24:100100` inactive-branch guard (PT422 `branch is inactive`) | `supabase/tests/fr06_manual_order_entry.sql`, `supabase/tests/fr06_inactive_branch_guard.sql`, `order-service.test.ts` (`BRANCH_INACTIVE`) | partial (database + service; no route handler or UI) |
 | FR-07 | Customer QR entry | | | | — |
 | FR-08 | Secure order claim | | | | — |
 | FR-09 | Multiple customer devices | | | | — |
-| FR-10 | Queue status lifecycle | `orders` (`transitions.ts`, `order-service.ts` `transition`) | `23:100000` order_status enum, `23:100300` `transition_order()` + `private.is_order_transition_allowed()` | `supabase/tests/fr10_order_transitions.sql`, `transitions.test.ts`, `order-service.test.ts` | partial (backend only: no dashboard, realtime or route handler) |
+| FR-10 | Queue status lifecycle | `orders` (`transitions.ts`, `order-service.ts` `transition`) | `23:100000` order_status enum, `23:100300` `transition_order()` + `private.is_order_transition_allowed()` | `supabase/tests/fr10_order_transitions.sql`, `fr06_inactive_branch_guard.sql` (existing orders still move in an inactive branch), `transitions.test.ts`, `order-service.test.ts` | partial (backend only: no dashboard, realtime or route handler) |
 | FR-11 | Employee queue dashboard | | | | — |
 | FR-12 | READY notifications | — | `23:100100` outbox_events (enqueue only), `23:100300` READY writes `order.ready` | `supabase/tests/at05_ready_outbox_once.sql` | partial (event is enqueued in the READY transaction; no worker or push, ADR-0004 Open) |
 | FR-13 | Customer status page | | | | — |
-| FR-14 | Audit history | `audit` | `100400` audit_logs + triggers, `100500` read policy | `supabase/tests/fr14_audit_trail.sql`, `audit.test.ts`, `fr06_manual_order_entry.sql`, `at06_ready_roles_audited.sql` | partial (tenancy tables and orders, via `orders_audit` in `23:100000`; records changed column names, not from/to values) |
+| FR-14 | Audit history | `audit` | `100400` audit_logs + triggers, `100500` read policy, `24:100000` orders-only audit trigger | `supabase/tests/fr14_audit_trail.sql`, `supabase/tests/fr14_order_audit_detail.sql`, `audit.test.ts`, `fr06_manual_order_entry.sql`, `at06_ready_roles_audited.sql` | partial (tenancy tables: changed column names; orders: `24:100000` `private.audit_order_change()` adds from_status, to_status, version_from, version_to to the single audit row of each status change) |
 | FR-15 | Restaurant configuration | | | | — |
 | FR-16 | SaaS subscription | | | | — |
 | FR-17 | Observability | | | | — |

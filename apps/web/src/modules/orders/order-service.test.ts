@@ -145,4 +145,26 @@ describe("FR-06 manual order creation", () => {
     const { repository } = fakeRepository(new OrderRepositoryError("42501", "not allowed"));
     await rejectsWithCode(createOrderService(repository).createManualOrder(ORDER.branchId, "42"), "NOT_ALLOWED");
   });
+
+  it("FR-06 maps PT422 from create_manual_order to BRANCH_INACTIVE (slice 02b)", async () => {
+    const { repository } = fakeRepository(new OrderRepositoryError("PT422", "branch is inactive"));
+    await rejectsWithCode(createOrderService(repository).createManualOrder(ORDER.branchId, "42"), "BRANCH_INACTIVE");
+  });
+
+  it("FR-10 PT422 from transition_order still means INVALID_TRANSITION, never BRANCH_INACTIVE", async () => {
+    const { repository } = fakeRepository(new OrderRepositoryError("PT422", "transition ready -> ready"));
+    await rejectsWithCode(createOrderService(repository).transition(ORDER.id, 3, "ready"), "INVALID_TRANSITION");
+  });
+
+  it("FR-06 the other create errors keep their mapping (42501, 22023, 23514)", async () => {
+    const cases: ReadonlyArray<[string, DomainErrorCode]> = [
+      ["42501", "NOT_ALLOWED"],
+      ["22023", "INVALID_INPUT"],
+      ["23514", "INVALID_INPUT"],
+    ];
+    for (const [databaseCode, domainCode] of cases) {
+      const { repository } = fakeRepository(new OrderRepositoryError(databaseCode, "from the database"));
+      await rejectsWithCode(createOrderService(repository).createManualOrder(ORDER.branchId, "42"), domainCode);
+    }
+  });
 });
