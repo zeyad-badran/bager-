@@ -38,9 +38,11 @@ select tests.assert_equals('AT-06 each READY wrote one UPDATE audit row naming t
                         '30000000-0000-4000-8000-0000000000a3', '30000000-0000-4000-8000-0000000000a4')),
   'a1=03,a2=04,a3=02,a4=01');
 select tests.assert_equals('AT-06 the audit row records which columns changed (status, version, ready_at)',
-  (select details::text from public.audit_logs
+  -- Only the changed-column list: slice 02b adds from/to status and versions to the same row
+  -- (checked in fr14_order_audit_detail.sql).
+  (select (details -> 'changed_columns')::text from public.audit_logs
     where entity_table = 'orders' and action = 'UPDATE' and entity_id = '30000000-0000-4000-8000-0000000000a1'),
-  '{"changed_columns": ["ready_at", "status", "version"]}');
+  '["ready_at", "status", "version"]');
 
 -- ---- Rejected: auditor, stranger, other branch, other tenant, anonymous -----------------
 -- Order 03 (Alpha Downtown, preparing v2) is the target for every rejected attempt.
