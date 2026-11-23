@@ -68,3 +68,26 @@ Tests first, as SQL tests in `supabase/tests/` named with requirement IDs, plus 
 - The role rule above conflicts with blueprint §11.2 or the owner's wishes.
 - You are tempted to add a queue/worker/push table beyond `outbox_events`.
 - AT-09 cannot be tested reliably with the available tooling.
+
+## Delivery record (2026-11-23)
+
+Built on branch `feat/slice-02-orders` from `main`. Tests were written first and failed before the code existed.
+
+| Scope item | State |
+|---|---|
+| 1 Migrations | 4 new files after `20261120100600`, each with a verify script: `20261123100000` orders (+ enums, audit trigger, RLS on), `…100100` outbox_events, `…100200` policies/grants, `…100300` functions. Existing migrations untouched |
+| 2 Permissions | Owner rule encoded: owner, manager, cashier, kitchen may perform every valid transition, including cancel; auditor read-only; branch-scoped staff on their branch only |
+| 3 TypeScript | `orders/transitions.ts`, `orders/order-service.ts` (injected repository); `CONFLICT` and `INVALID_TRANSITION` added to `shared`. No route handlers |
+| 4 Seed | Synthetic orders: ticket 42 in both restaurants; ticket 7 reused in Alpha Downtown after collection |
+| 5 Traceability | Updated; `CLAUDE.md` unchanged (no new commands) |
+
+Error codes: `42501` not allowed or not found (identical on purpose, AT-11) · `PT409` version conflict ·
+`PT422` illegal transition · `22023` missing argument · `23514` bad ticket number. PostgREST maps `PTxyz` to HTTP xyz.
+
+AT-09 runs as `supabase/tests/concurrency/at09_two_sessions_race.sh` (two real connections, forced overlap,
+called by `scripts/test-db.sh`). A mutation check (removing `FOR UPDATE`) made it fail, as it should.
+
+Deviations:
+- Unit tests use **Vitest**, not `node:test`: the owner moved all unit tests to Vitest in slice 01b.
+- The role rule lets kitchen staff cancel and collect, which blueprint §11.2 (still a proposal) does not list.
+  Encoded as the owner decided; the auditor-is-read-only part is still an assumption to confirm.
