@@ -22,6 +22,7 @@ POS adapter or provider code. Build the customer and staff flows with manual ord
   risks, roadmap phases. Cite these IDs in commits and PRs.
 - `docs/adr/` — architecture decisions and their status (Proposed / Accepted / Open).
 - `docs/code-style.md` and `docs/traceability.md` — how code is written and traced to requirements.
+- `docs/future-plan.md` — decisions deferred on purpose, with the trigger for each.
 - `docs/workflow.md` — how Claude chat, Claude Code and the database step hand work to each other.
 - `docs/prompts/` — task specs written by Claude chat. Implement exactly the spec you are given.
 
@@ -44,8 +45,10 @@ If code and docs disagree, stop and ask. Do not silently change a decision.
 
 ## Domain invariants (blueprint §5, §7, §9)
 
-- An order number is an **identifier, not a secret**. Customer access needs a claim token or equivalent;
-  order number + QR alone must never grant access (FR-08, AT-03).
+- An order number is an **identifier, not a secret**. **Owner decision (ADR-0006, 2026-11-24, risk accepted):** v1 lets a
+  customer claim with branch QR + order number alone. The safeguards in ADR-0006 stay mandatory (rate limits, identical
+  failures, claim bound to the order instance, no listing). Do not weaken them, and do not add a second factor unless a spec
+  asks for it. Stronger claims are planned in `docs/future-plan.md`.
 - Internal UUID primary keys. External order identity is scoped by `provider + branch`; ticket numbers
   repeat and are reused.
 - READY is a **committed business state**; push delivery is a separate async outcome. Write the state
