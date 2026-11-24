@@ -27,3 +27,7 @@ polling → tightly controlled read-only local agent as a last resort. Never wri
 ## Evidence needed
 Phase 2 POS provider scorecard (docs, sandbox, webhooks, ID stability, ticket-number reuse,
 cancel/void semantics).
+
+## Update 2026-11-24
+The product owner deferred all POS connector work until the first client exists (no pilot restaurant, so no provider
+to evaluate). The status stays Proposed. Manual entry (FR-06) is the first and only order source until then.

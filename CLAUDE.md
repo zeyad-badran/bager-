@@ -13,6 +13,9 @@ POS-agnostic, manual order entry always available, multiple customer devices per
 workflow) are **Accepted**. Other ADRs marked Proposed/Open are not approved: do not build irreversible
 things on them (hosting, background worker, customer claim model).
 
+**Roadmap change (2026-11-24):** the POS connector (Phase 4) is deferred until the first client exists. Do not write any
+POS adapter or provider code. Build the customer and staff flows with manual orders first (see `docs/prompts/README.md`).
+
 ## Source of truth (read before you code)
 
 - `docs/blueprint.md` — product blueprint. Requirement IDs `FR-xx`, acceptance scenarios `AT-xx`,
