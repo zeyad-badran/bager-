@@ -13,7 +13,7 @@ Claude chat writes them; Claude Code implements exactly what they say.
 | 3b | [`slice-02b-order-audit-and-branch-guard.md`](slice-02b-order-audit-and-branch-guard.md) | done (PR #8 merged, applied to staging) | nothing external |
 | 4 | [`spike-claim-token.md`](spike-claim-token.md) | delivered, in review (report: [`docs/spikes/claim-token.md`](../spikes/claim-token.md)) | nothing external; decides ADR-0006 |
 | 5 | [`spike-anonymous-realtime.md`](spike-anonymous-realtime.md) | ready after 01b | local Supabase |
-| 6 | [`spike-web-push.md`](spike-web-push.md) | ready | **owner tests on real phones** |
+| 6 | [`spike-web-push.md`](spike-web-push.md) | delivered, in review; **owner tests on real phones** (report: [`docs/spikes/web-push.md`](../spikes/web-push.md), matrix: [`docs/spikes/web-push-matrix.md`](../spikes/web-push-matrix.md)) | owner fills the device matrix |
 
 Specs 4, 5 and 6 are independent and can run in parallel in separate sessions/branches.
 Spikes produce a report in `docs/spikes/<name>.md`; Claude chat turns the report into an ADR decision.

@@ -1,0 +1,118 @@
+<!doctype html>
+<!--
+  Web Push test page for real phones (THROWAWAY harness; English only, not product UI).
+  Module:   spikes/web-push (never imported by product code)
+  Serves:   FR-12, AT-07, AT-08 · spike scope items 1 and 3 · blueprint §10.2 (explain before asking; clear state)
+-->
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Push test">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <title>Push test</title>
+  <style>
+    :root { --ink: #1b1f1e; --muted: #5b6563; --line: #d7dedc; --bg: #f6f8f7; --card: #fff; --accent: #1f6f5c;
+            --ok: #1d7a3e; --bad: #b3261e; --warn: #8a5a00; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #e8eeec; --muted: #a3b0ad; --line: #34403d; --bg: #121716; --card: #1b2220; --accent: #5cc3a6;
+              --ok: #6fd08f; --bad: #ff8a80; --warn: #f2c14e; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+    main { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+    h1 { font-size: 1.35rem; margin: 4px 0 2px; }
+    h2 { font-size: 1.05rem; margin: 0 0 8px; }
+    .sub { color: var(--muted); margin: 0 0 16px; font-size: .95rem; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+    .state { font-weight: 700; font-size: 1.1rem; }
+    .state.granted { color: var(--ok); } .state.denied, .state.unsupported { color: var(--bad); }
+    .state.needs-home-screen, .state.not-asked { color: var(--warn); }
+    button { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 14px 16px; width: 100%;
+             background: var(--accent); color: #fff; margin-top: 8px; min-height: 48px; }
+    button.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+    button:disabled { opacity: .45; }
+    label { display: flex; gap: 10px; align-items: center; padding: 8px 0; min-height: 44px; }
+    input[type=radio], input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+    select { font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line); width: 100%;
+             background: var(--card); color: var(--ink); }
+    .note { background: var(--bg); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: .95rem; }
+    .note:empty { display: none; }
+    .big { font-size: 1.2rem; font-weight: 700; }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; font-size: .92rem; }
+    dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
+    .result { border-top: 1px solid var(--line); padding: 10px 0; font-size: .93rem; }
+    .result:first-child { border-top: 0; }
+    .muted { color: var(--muted); }
+    .banner { position: sticky; top: 8px; z-index: 1; background: var(--accent); color: #fff; border-radius: 12px;
+              padding: 12px 14px; margin-bottom: 14px; font-weight: 600; }
+    .banner:empty { display: none; }
+  </style>
+</head>
+<body>
+<main>
+  <div id="banner" class="banner" role="status" aria-live="polite"></div>
+  <h1>Push notification test</h1>
+  <p class="sub">Test tool for the Bager notification spike. No real orders, no personal data.</p>
+
+  <section aria-labelledby="h-state">
+    <h2 id="h-state">1. This phone</h2>
+    <p>Notifications: <span id="state" class="state">checking…</span></p>
+    <p id="state-help" class="muted"></p>
+    <dl>
+      <dt>Opened from Home Screen</dt><dd id="installed">…</dd>
+      <dt>Push service</dt><dd id="endpoint">not subscribed yet</dd>
+      <dt>Browser</dt><dd id="ua"></dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="h-enable">
+    <h2 id="h-enable">2. Turn on notifications</h2>
+    <p class="muted">So you hear when your order is ready, even with the phone locked. Your phone asks once; you can say no.</p>
+    <button id="enable" type="button">Turn on notifications</button>
+    <div id="enable-note" class="note"></div>
+  </section>
+
+  <section aria-labelledby="h-send">
+    <h2 id="h-send">3. Send a test</h2>
+    <fieldset style="border:0;padding:0;margin:0">
+      <legend class="muted">Type</legend>
+      <label><input type="radio" name="kind" value="plain" checked> Plain notification</label>
+      <label><input type="radio" name="kind" value="vibrate"> With vibration</label>
+      <label><input type="radio" name="kind" value="require-interaction"> Stays until tapped</label>
+    </fieldset>
+    <label for="delay" class="muted" style="min-height:0">When</label>
+    <select id="delay">
+      <option value="0">Now (page stays open)</option>
+      <option value="15" selected>In 15 seconds (lock the phone or close the tab)</option>
+      <option value="30">In 30 seconds</option>
+      <option value="60">In 60 seconds</option>
+    </select>
+    <label><input type="checkbox" id="fail"> Push service fails twice first (retry test)</label>
+    <label><input type="checkbox" id="duplicate"> Send the same READY twice (should arrive once)</label>
+    <button id="send" type="button" disabled>Send test notification</button>
+    <div id="send-note" class="note"></div>
+  </section>
+
+  <section aria-labelledby="h-vibrate">
+    <h2 id="h-vibrate">4. Vibration with the page open</h2>
+    <button id="vibrate" type="button" class="secondary">Vibrate this phone now</button>
+    <div id="vibrate-note" class="note"></div>
+  </section>
+
+  <section aria-labelledby="h-results">
+    <h2 id="h-results">5. Results</h2>
+    <p class="muted">Updates every 2 seconds. "Phone received" means the phone's background code ran, not that you saw it. Write down what you saw.</p>
+    <div id="results"><p class="muted">No tests yet.</p></div>
+    <button id="copy" type="button" class="secondary">Copy results (to paste into the matrix)</button>
+    <div id="copy-note" class="note"></div>
+  </section>
+</main>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

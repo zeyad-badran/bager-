@@ -1,0 +1,9 @@
+{
+  "name": "spike-web-push",
+  "private": true,
+  "description": "THROWAWAY spike (FR-12, AT-07, AT-08): Web Push test harness. Not part of the pnpm workspace; install with `pnpm install --dir spikes/web-push --ignore-workspace`.",
+  "type": "module",
+  "dependencies": {
+    "web-push": "3.6.7"
+  }
+}

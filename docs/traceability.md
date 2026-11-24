@@ -22,7 +22,7 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 | FR-09 | Multiple customer devices | `spikes/claim-token` (throwaway) | — | `spikes/claim-token/devices.test.ts`; report `docs/spikes/claim-token.md` | spike (ADR-0006 Accepted 2026-11-24 with owner-accepted risk; build in the customer claim slice) |
 | FR-10 | Queue status lifecycle | `orders` (`transitions.ts`, `order-service.ts` `transition`) | `23:100000` order_status enum, `23:100300` `transition_order()` + `private.is_order_transition_allowed()` | `supabase/tests/fr10_order_transitions.sql`, `fr06_inactive_branch_guard.sql` (existing orders still move in an inactive branch), `transitions.test.ts`, `order-service.test.ts` | partial (backend only: no dashboard, realtime or route handler) |
 | FR-11 | Employee queue dashboard | | | | — |
-| FR-12 | READY notifications | — | `23:100100` outbox_events (enqueue only), `23:100300` READY writes `order.ready` | `supabase/tests/at05_ready_outbox_once.sql` | partial (event is enqueued in the READY transaction; no worker or push, ADR-0004 Open) |
+| FR-12 | READY notifications | `spikes/web-push` (throwaway: outbox worker, fake provider, test page, sender) | `23:100100` outbox_events (enqueue only), `23:100300` READY writes `order.ready` | `supabase/tests/at05_ready_outbox_once.sql`; spike `spikes/web-push/outbox.test.ts`, `backoff.test.ts`, `harness.test.ts`; report `docs/spikes/web-push.md`, device matrix `docs/spikes/web-push-matrix.md` (owner to fill) | partial (event is enqueued in the READY transaction; no product worker or push, ADR-0004 Open; spike evidence for retry/idempotency, real devices pending) |
 | FR-13 | Customer status page | | | | — |
 | FR-14 | Audit history | `audit` | `100400` audit_logs + triggers, `100500` read policy, `24:100000` orders-only audit trigger | `supabase/tests/fr14_audit_trail.sql`, `supabase/tests/fr14_order_audit_detail.sql`, `audit.test.ts`, `fr06_manual_order_entry.sql`, `at06_ready_roles_audited.sql` | partial (tenancy tables: changed column names; orders: `24:100000` `private.audit_order_change()` adds from_status, to_status, version_from, version_to to the single audit row of each status change) |
 | FR-15 | Restaurant configuration | | | | — |
@@ -42,8 +42,8 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 | AT-04 | One order followed on several devices | `spikes/claim-token/devices.test.ts` (in-memory library only) | spike |
 | AT-05 | Kitchen employee marks READY | `supabase/tests/at05_ready_outbox_once.sql`, `supabase/tests/concurrency/at09_two_sessions_race.sh` (one event under a race) | partial (one outbox event per READY proven; dispatch is ADR-0004) |
 | AT-06 | Cashier marks READY | `supabase/tests/at06_ready_roles_audited.sql` (owner rule 2026-11-21: any staff role; auditor read-only) | done (database layer; role rule may change with blueprint §11.2) |
-| AT-07 | Push provider unavailable | | — |
-| AT-08 | Customer denies push permission | | — |
+| AT-07 | Push provider unavailable | `spikes/web-push/outbox.test.ts` (503 ×3 then sent; 429 Retry-After; retries exhausted → dead letter), `backoff.test.ts`, `forced-failures.test.ts` | spike (fake provider; product worker not built) |
+| AT-08 | Customer denies push permission | `spikes/web-push/push-env.test.ts` (permission states shown on the test page); manual: `docs/spikes/web-push-matrix.md` I-13, A-13 | spike (device results pending; open-page status is the realtime spike) |
 | AT-09 | Two employees act concurrently | `supabase/tests/concurrency/at09_two_sessions_race.sh` (two connections), `fr10_order_transitions.sql` (stale version) | done (database layer) |
 | AT-10 | POS cancellation after READY | | — |
 | AT-11 | Cross-tenant API request | `supabase/tests/at02_at11_tenant_isolation.sql`, `supabase/tests/at11_orders_cross_tenant.sql` (database/RLS layer only; no API exists yet) | partial |
