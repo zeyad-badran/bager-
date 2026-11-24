@@ -44,6 +44,15 @@ The owner will fix this later if a client or a security review asks for it (`doc
   (option 4) is not needed yet.
 - Audit claims with ids only, never the order number in logs beyond what the order record already holds.
 
+**Compensating control, owner decision 2026-11-24: receipt check at pickup.** The customer shows the receipt when collecting and
+staff check that its order number matches before handing over the food. This protects what matters most (the food goes
+only to the person holding the receipt), so a stranger who followed someone else's order gains nothing physical.
+What it does **not** cover: a stranger still sees that order's status and gets its alert, and could use up the per-order
+device cap before the real customer claims. Those are accepted as low impact for v1.
+Product consequence: the staff screen shows the order number large and clear, and marking COLLECTED is a deliberate action
+taken after the receipt check. The check is an operating procedure, not something the software can enforce, so it belongs
+in the restaurant onboarding checklist.
+
 Because the order number is the only factor, **ticket-number quality is the restaurant's security level.** The product must
 not claim stronger security than that, and must say so in the pilot onboarding.
 

@@ -22,6 +22,7 @@ without at least step 1.
 sandbox, webhooks, stable ids).
 
 ## 3. Operational items still to schedule
+- Restaurant onboarding checklist: staff check the customer's receipt against the order number before handing over (ADR-0006).
 - Monitoring and error reporting (FR-17), backups and a restore test, a written threat model.
 - Hosting decision (ADR-0003) and the background worker approach (ADR-0004).
 - Last-owner protection (`TODO(FR-03)`) and the staff invitation flow.
