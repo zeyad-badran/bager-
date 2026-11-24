@@ -18,8 +18,8 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 | FR-05 | Automatic order ingestion | | | | — |
 | FR-06 | Manual order entry | `orders` (`order-service.ts` `createManualOrder`) | `23:100000` orders, `23:100200` read policy (no client writes), `23:100300` `create_manual_order()`, `24:100100` inactive-branch guard (PT422 `branch is inactive`) | `supabase/tests/fr06_manual_order_entry.sql`, `supabase/tests/fr06_inactive_branch_guard.sql`, `order-service.test.ts` (`BRANCH_INACTIVE`) | partial (database + service; no route handler or UI) |
 | FR-07 | Customer QR entry | | | | — |
-| FR-08 | Secure order claim | | | | — |
-| FR-09 | Multiple customer devices | | | | — |
+| FR-08 | Secure order claim | `spikes/claim-token` (throwaway) | — | `spikes/claim-token/claim.test.ts`, `secrets.test.ts`, `rate-limiter.test.ts`, `staff-fallback.test.ts`, `timing.test.ts`; report `docs/spikes/claim-token.md` | spike (evidence for ADR-0006, Open) |
+| FR-09 | Multiple customer devices | `spikes/claim-token` (throwaway) | — | `spikes/claim-token/devices.test.ts`; report `docs/spikes/claim-token.md` | spike (evidence for ADR-0006, Open) |
 | FR-10 | Queue status lifecycle | `orders` (`transitions.ts`, `order-service.ts` `transition`) | `23:100000` order_status enum, `23:100300` `transition_order()` + `private.is_order_transition_allowed()` | `supabase/tests/fr10_order_transitions.sql`, `fr06_inactive_branch_guard.sql` (existing orders still move in an inactive branch), `transitions.test.ts`, `order-service.test.ts` | partial (backend only: no dashboard, realtime or route handler) |
 | FR-11 | Employee queue dashboard | | | | — |
 | FR-12 | READY notifications | — | `23:100100` outbox_events (enqueue only), `23:100300` READY writes `order.ready` | `supabase/tests/at05_ready_outbox_once.sql` | partial (event is enqueued in the READY transaction; no worker or push, ADR-0004 Open) |
@@ -38,8 +38,8 @@ Status: `—` not started · `spike` evidence only · `partial` · `done`
 |---|---|---|---|
 | AT-01 | Repeated POS webhook for same order | `23:100000` unique `(branch_id, provider, external_id)` (verify script only; no ingest endpoint yet) | partial (creation half: constraint exists; ingest half is FR-05) |
 | AT-02 | Two restaurants with same ticket number | `supabase/tests/at02_at11_tenant_isolation.sql`, `supabase/tests/at02_orders_same_ticket_number.sql` (same ticket number in two restaurants; reuse in one branch after collected) | done (database layer) |
-| AT-03 | Unauthorized user guesses ticket number | | — |
-| AT-04 | One order followed on several devices | | — |
+| AT-03 | Unauthorized user guesses ticket number | `spikes/claim-token/claim.test.ts`, `rate-limiter.test.ts`, `timing.test.ts`, `staff-fallback.test.ts` (in-memory library only) | spike |
+| AT-04 | One order followed on several devices | `spikes/claim-token/devices.test.ts` (in-memory library only) | spike |
 | AT-05 | Kitchen employee marks READY | `supabase/tests/at05_ready_outbox_once.sql`, `supabase/tests/concurrency/at09_two_sessions_race.sh` (one event under a race) | partial (one outbox event per READY proven; dispatch is ADR-0004) |
 | AT-06 | Cashier marks READY | `supabase/tests/at06_ready_roles_audited.sql` (owner rule 2026-11-21: any staff role; auditor read-only) | done (database layer; role rule may change with blueprint §11.2) |
 | AT-07 | Push provider unavailable | | — |
