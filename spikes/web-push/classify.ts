@@ -42,3 +42,17 @@ export function classifyResult(result: ProviderResult): Classified {
   }
   return { kind: "permanent" };
 }
+
+const MS_PER_SECOND = 1000;
+
+/**
+ * Retry-After is either delay-seconds or an HTTP date (RFC 9110 §10.2.3). Returns milliseconds from `now`,
+ * or undefined when the header is missing or unreadable.
+ */
+export function parseRetryAfter(header: string | undefined, now: number): number | undefined {
+  if (!header) return undefined;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * MS_PER_SECOND;
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - now);
+}

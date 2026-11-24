@@ -1,0 +1,11 @@
+{
+  "name": "Bager push test",
+  "short_name": "Push test",
+  "description": "THROWAWAY Web Push spike (FR-12). Test harness only.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f6f5c",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

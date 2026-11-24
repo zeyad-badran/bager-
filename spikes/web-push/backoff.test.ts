@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { backoffDelayMs } from "./backoff";
-import { classifyResult } from "./classify";
+import { classifyResult, parseRetryAfter } from "./classify";
 import { TEST_POLICY } from "./test-support";
 
 describe("AT-07 backoff with jitter", () => {
@@ -66,5 +66,17 @@ describe("AT-07 classify provider results", () => {
 
   it("other 4xx (bad VAPID key, payload too large) are permanent: dead-letter, keep the subscription", () => {
     for (const status of [400, 401, 403, 413]) assert.equal(response(status).kind, "permanent");
+  });
+});
+
+describe("AT-07 Retry-After header", () => {
+  const now = Date.UTC(2026, 10, 25, 12, 0, 0);
+
+  it("reads delay-seconds and HTTP dates; ignores missing or unreadable values", () => {
+    assert.equal(parseRetryAfter("120", now), 120_000);
+    assert.equal(parseRetryAfter(new Date(now + 30_000).toUTCString(), now), 30_000);
+    assert.equal(parseRetryAfter(new Date(now - 30_000).toUTCString(), now), 0);
+    assert.equal(parseRetryAfter(undefined, now), undefined);
+    assert.equal(parseRetryAfter("soon", now), undefined);
   });
 });

@@ -31,15 +31,28 @@ const HTTP_CREATED = 201;
 /** Answers from the per-subscription script, in order; once the script is used up it answers 201. */
 export class FakePushProvider implements PushProvider {
   readonly calls: RecordedCall[] = [];
-  private readonly script: Map<string, ScriptedOutcome[]>;
+  private readonly scripts: Map<string, ScriptedOutcome[]>;
 
   constructor(script: Record<string, ScriptedOutcome[]> = {}) {
-    this.script = new Map(Object.entries(script).map(([id, outcomes]) => [id, [...outcomes]]));
+    this.scripts = new Map(Object.entries(script).map(([id, outcomes]) => [id, [...outcomes]]));
+  }
+
+  /** Appends answers for a subscription whose id is only known after it was created. */
+  script(subscriptionId: string, outcomes: ScriptedOutcome[]): void {
+    this.scriptFor(subscriptionId).push(...outcomes);
+  }
+
+  private scriptFor(subscriptionId: string): ScriptedOutcome[] {
+    const existing = this.scripts.get(subscriptionId);
+    if (existing) return existing;
+    const created: ScriptedOutcome[] = [];
+    this.scripts.set(subscriptionId, created);
+    return created;
   }
 
   async send(subscription: SubscriptionRecord, message: PushMessage): Promise<ProviderResult> {
     this.calls.push({ ...message, subscriptionId: subscription.id });
-    const outcome = this.script.get(subscription.id)?.shift() ?? HTTP_CREATED;
+    const outcome = this.scripts.get(subscription.id)?.shift() ?? HTTP_CREATED;
     if (outcome === "network-error") return { kind: "network-error", message: "fake: connection reset" };
     if (outcome === "accepted-but-response-lost") return { kind: "network-error", message: "fake: timeout after accept" };
     if (typeof outcome === "number") return { kind: "response", statusCode: outcome };
