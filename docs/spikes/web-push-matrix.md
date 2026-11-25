@@ -219,6 +219,36 @@ When you're done, send the filled matrix and the copied results to Claude chat. 
 
 ---
 
+## Part F — Results recorded by the owner (2026-11-24 to 2026-11-25)
+
+Source: the page's own "Copy results" output plus the owner's notes, from the owner's two phones through a Cloudflare quick tunnel.
+The template rows in Part E are left untouched. Anything not listed here was **not tested or not recorded**.
+
+| Phone | Browser | Home Screen | Permission | Push service | Test | Tries | Arrived | Seconds | Tap opened page |
+|---|---|---|---|---|---|---|---|---|---|
+| iPhone (iOS 26.7.3 per owner; the user agent string reports iOS 18_7 and Safari 26.6.3) | Safari, opened from the Home Screen icon | yes | granted | Apple Web Push | plain | 1 | yes | 6.6 | yes |
+| same | same | yes | granted | Apple Web Push | vibrate | 1 | yes | 4.4 | not tapped |
+| same | same | yes | granted | Apple Web Push | stays until tapped | 1 | yes | 1.7 | not tapped |
+| same | same | yes | granted | Apple Web Push | stays until tapped (3 tries, retry test) | 3 | yes | 8.9 | yes |
+| Android 10 | Samsung Internet 31.0 (Chromium 148) | no | granted | Google FCM | plain | 1 | yes | 7.6 | yes |
+| same | same | no | granted | Google FCM | stays until tapped | 1 | yes | 1.8 | yes |
+| same | same | no | granted | Google FCM | vibrate | 1 | yes | 0.8 | yes |
+
+Owner observations:
+- **iPhone:** a notification sound played. **No vibration** (the web vibrate option is not supported on iPhone, so none was expected).
+  The sound was heard with the owner's silent switch and notification settings on; whether each test ran with the phone locked or the
+  app closed was **not recorded**.
+- **Android:** a notification sound played. The notification's `vibrate` pattern **did not vibrate** the phone; the page's own
+  "Vibrate now" button (page open) **did** vibrate it. Cause not verified (Android notification settings likely override the page).
+- The retry test (iPhone, 3 tries) still delivered the notification.
+
+What these results allow us to say, and what they do not:
+- May say: on these two phones, a notification from our sender arrived, with sound, in under 10 seconds and tapping it opened the page.
+  On iPhone it only works from the Home Screen app; on Android it worked from the browser without installing.
+- Must still not say: that it works with the phone locked or the app closed (not recorded), that it vibrates (it did not),
+  that it works in Chrome, in a Safari tab, on other phones, or with battery saving on, or that "accepted by push service" means delivered.
+- Not tested: Don't Allow and revoked permission (AT-08), Safari tab on iPhone (expected: not available), Chrome on Android, battery saving.
+
 ## Troubleshooting
 
 | What you see | What to do |
